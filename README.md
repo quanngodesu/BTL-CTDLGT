@@ -1,4 +1,5 @@
 # BTL-CTDLGT
 Student Management
 
-![Screenshot 2024-12-22 114922](https://github.com/user-attachments/assets/f9ba334f-9f9e-433e-a327-404e9ae44733)
+![image](https://github.com/user-attachments/assets/8cba467a-a5a4-42be-a23d-0096829a6d48)
+
