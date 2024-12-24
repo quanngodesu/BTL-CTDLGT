@@ -2,38 +2,65 @@
 #include <string>
 #include <vector>
 #include <cstdio>
+#include <sstream>
 using namespace std;
 
 class Event {
     private:
         string name;
-        int time;
+        int hours;
+        int minutes;
         int priority;
+        string reminder;
+
     public:
-        Event(string n, int t, int p) {
+        Event(string n, int h, int m, int p, string r) {
             name = n;
-            time = t;
+            hours = h;
+            minutes = m;
             priority = p;
+            reminder = r;
         }
 
-        string getName() const{
+        string getName() const {
             return name;
         }
-        int getTime() const{
-            return time;
+
+        int getHours() const {
+            return hours;
         }
-        int getPriority() const{
+
+        int getMinutes() const {
+            return minutes;
+        }
+
+        int getPriority() const {
             return priority;
+        }
+
+        string getReminder() const {
+            return reminder;
         }
 
         void setName(string n) {
             name = n;
         }
-        void setTime(int t) {
-            time = t;
+
+        void setTime(int h, int m) {
+            hours = h;
+            minutes = m;
         }
+
         void setPriority(int p) {
             priority = p;
+        }
+
+        void setReminder(string r) {
+            reminder = r;
+        }
+
+        static string formatTime(int hours, int minutes) {
+            return to_string(hours) + " " + (minutes < 10 ? "0" + to_string(minutes) : to_string(minutes));
         }
 
         static void display(const vector<Event>& events) {
@@ -41,22 +68,28 @@ class Event {
                 cout << "No events to display." << endl;
                 return;
             }
-            cout << "+-----------------------------------------------+" << endl;
-            cout << "|   Name         |   Time (Hours)  |  Priority  |" << endl;
-            cout << "+-----------------------------------------------+" << endl;
+            cout << "+---------------------------------------------------------------------------+" << endl;
+            cout << "|      Name      |       Time      |  Priority  |          Reminder         |" << endl;
+            cout << "+---------------------------------------------------------------------------+" << endl;
             for (const auto& event : events) {
-                printf("| %-14s | %-15d | %-10d |\n",
+                printf("| %-14s | %-15s | %-10d | %-25s |\n",
                        event.getName().c_str(),
-                       event.getTime(),
-                       event.getPriority());
+                       formatTime(event.getHours(), event.getMinutes()).c_str(),
+                       event.getPriority(),
+                       event.getReminder().c_str());
             }
-            cout << "+-----------------------------------------------+" << endl;
+            cout << "+---------------------------------------------------------------------------+" << endl;
         }
 };
 
 int main() {
-    Event event1("Di choi voi ny", 2200, 1);
-    Event event2("Hoc XSTK", 2000, 2);
+    
+    string name, reminder;
+    int hour, minute, priority;
+
+    
+    Event event1("Di choi voi ny", 22, 0, 1, "Ve nha truoc 23 00");
+    Event event2("Hoc XSTK", 20, 0, 2, "Lam BTVN");
 
     vector<Event> events = {event1, event2};
 
