@@ -70,6 +70,9 @@ void formatTime(int time, char *buffer) {
     int minute = time % 100;
     sprintf(buffer, "%02d:%02d", hour, minute);
 }
+int isValidTime(int time){
+	return (time < 0 || time > 2400);
+}
 //Add Events
 void addEvents(Queue *q){
 
@@ -84,7 +87,7 @@ void addEvents(Queue *q){
 
     printf("Enter event time start (HHMM): ");
     scanf("%d", &newEvent.timeStart);
-    while(newEvent.timeStart < 0 || newEvent.timeStart > 2400){
+    while(isValidTime(newEvent.timeStart)){
     	printf("Invalid time. Please try again.\n");
     	printf("Enter event time start (HHMM): ");
         scanf("%d", &newEvent.timeStart);
@@ -95,7 +98,10 @@ void addEvents(Queue *q){
         if(newEvent.timeEnd < newEvent.timeStart){
         	printf("Error. The end time should be later than the start time. Please try again.\n");
 		}
-	} while(newEvent.timeEnd < newEvent.timeStart);
+		if(isValidTime(newEvent.timeEnd)){
+			printf("Invalid time. Please try again.\n");
+		}
+	} while(newEvent.timeEnd < newEvent.timeStart || isValidTime(newEvent.timeEnd));
     
     printf("Enter event priority: ");
     scanf("%d", &newEvent.priority);
@@ -109,6 +115,7 @@ void addEvents(Queue *q){
     printf("Event added to queue.\n");
 }
 
+int totalEventNum;
 void displayEvents(Queue *q) {  
     if (isQueueEmpty(q)) {
         printf("No events to display.\n");
@@ -136,17 +143,22 @@ void displayEvents(Queue *q) {
         i = (i + 1) % MAX_EVENTS;
         eventNum ++;
     }
+    totalEventNum = eventNum;
 
     printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
 }
 
 void editEvents(Queue *q){
+	if(isQueueEmpty(q)){
+		printf("No events to edit.\n");
+		return;
+	}
 	int eventNum;
 	do{
 		printf("Enter event number to edit: ");
 	    scanf("%d", &eventNum);
 	    getchar();
-	    if(eventNum <= 0 || eventNum > MAX_EVENTS || isQueueEmpty(q)){
+	    if(eventNum <= 0 || eventNum > totalEventNum || isQueueEmpty(q)){
 		    printf("Invalid event number.\n");
 	    }
 	}while(eventNum <= 0 || eventNum > MAX_EVENTS || isQueueEmpty(q));
