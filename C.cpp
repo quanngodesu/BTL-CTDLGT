@@ -4,7 +4,7 @@
 
 #define MAX_EVENTS 100
 #define MAX_NAME 50
-#define MAX_REMINDER 100
+#define MAX_REMINDER 50
 
 typedef struct {
     char name[MAX_NAME];
@@ -84,6 +84,11 @@ void addEvents(Queue *q){
 
     printf("Enter event time start (HHMM): ");
     scanf("%d", &newEvent.timeStart);
+    while(newEvent.timeStart < 0 || newEvent.timeStart > 2400){
+    	printf("Invalid time. Please try again.\n");
+    	printf("Enter event time start (HHMM): ");
+        scanf("%d", &newEvent.timeStart);
+	}
     do{
 		printf("Enter event time end (HHMM): ");
         scanf("%d", &newEvent.timeEnd);
@@ -135,6 +140,84 @@ void displayEvents(Queue *q) {
     printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
 }
 
+void editEvents(Queue *q){
+	int eventNum;
+	do{
+		printf("Enter event number to edit: ");
+	    scanf("%d", &eventNum);
+	    getchar();
+	    if(eventNum <= 0 || eventNum > MAX_EVENTS || isQueueEmpty(q)){
+		    printf("Invalid event number.\n");
+	    }
+	}while(eventNum <= 0 || eventNum > MAX_EVENTS || isQueueEmpty(q));
+	
+	Event *event = &q->events[eventNum-1];
+	int choice;
+	do{
+		printf("\nEdit menu: \n");
+	    printf("1. Name\n");
+	    printf("2. Start Time\n");
+	    printf("3. End Time\n");
+	    printf("4. Priority\n");
+	    printf("5. Reminder\n");
+	    printf("6. Cancel\n");
+	    printf("Enter your choice: ");
+	    scanf("%d", &choice);
+	    getchar();
+	    
+	    switch(choice){
+	    	case 1:
+	    		printf("Enter new event name: ");
+	    		fgets(event->name, MAX_NAME, stdin);
+	    		event->name[strcspn(event->name, "\n")] = 0;
+	    		printf("Successfully editted.\n");
+	    		break;
+	    		
+	    	case 2:
+	    		printf("Enter new start time: ");
+	    		scanf("%d", &event->timeStart);
+	    		while(event->timeStart < 0 || event->timeStart > 2400){
+	    			printf("Invalid time. Please try again.\n");
+	    			printf("Enter new start time: ");
+	    		    scanf("%d", &event->timeStart);
+				}
+				printf("Successfully editted.\n");
+				break;
+				
+			case 3:
+				printf("Enter new end time: ");
+	    		scanf("%d", &event->timeEnd);
+	    		while(event->timeEnd < 0 || event->timeEnd > 2400 || event->timeStart > event->timeEnd){
+	    			printf("Invalid time. Please try again.\n");
+	    			printf("Enter new end time: ");
+	    		    scanf("%d", &event->timeEnd);
+				}
+				printf("Successfully editted.\n");
+				break;
+				
+			case 4:
+				printf("Enter new priority: ");
+				scanf("%d", &event->priority);
+				printf("Successfully editted.\n");
+				break;
+				
+			case 5:
+				printf("Enter new reminder: ");
+                fgets(event->reminder, MAX_REMINDER, stdin);
+                event->reminder[strcspn(event->reminder, "\n")] = 0;
+                printf("Successfully editted.\n");
+                break;
+                
+            case 6:
+            	printf("Edit cancelled.\n");
+            	return;
+            	
+            default:
+            	printf("Invalid choice. Please try again.\n");
+		}
+	}while(choice != 6);
+
+}
 int main() {
     Queue eventQueue;
     initializeQueue(&eventQueue);
@@ -164,6 +247,7 @@ int main() {
         		break;
         	
         	case 4:
+        		editEvents(&eventQueue);
         		break;
         		
         	case 5:
