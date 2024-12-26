@@ -70,7 +70,7 @@ void formatTime(int time, char *buffer) {
     int minute = time % 100;
     sprintf(buffer, "%02d:%02d", hour, minute);
 }
-int isValidTime(int time){
+int isInvalidTime(int time){
 	return (time < 0 || time > 2400);
 }
 //Add Events
@@ -87,7 +87,7 @@ void addEvents(Queue *q){
 
     printf("Enter event time start (HHMM): ");
     scanf("%d", &newEvent.timeStart);
-    while(isValidTime(newEvent.timeStart)){
+    while(isInvalidTime(newEvent.timeStart)){
     	printf("Invalid time. Please try again.\n");
     	printf("Enter event time start (HHMM): ");
         scanf("%d", &newEvent.timeStart);
@@ -98,10 +98,10 @@ void addEvents(Queue *q){
         if(newEvent.timeEnd < newEvent.timeStart){
         	printf("Error. The end time should be later than the start time. Please try again.\n");
 		}
-		if(isValidTime(newEvent.timeEnd)){
+		if(isInvalidTime(newEvent.timeEnd)){
 			printf("Invalid time. Please try again.\n");
 		}
-	} while(newEvent.timeEnd < newEvent.timeStart || isValidTime(newEvent.timeEnd));
+	} while(newEvent.timeEnd < newEvent.timeStart || isInvalidTime(newEvent.timeEnd));
     
     printf("Enter event priority: ");
     scanf("%d", &newEvent.priority);
