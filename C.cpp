@@ -104,34 +104,35 @@ void addEvents(Queue *q){
     printf("Event added to queue.\n");
 }
 
-// Display Events
 void displayEvents(Queue *q) {  
     if (isQueueEmpty(q)) {
         printf("No events to display.\n");
         return;
     }
 
-    printf("+-------------------------------------------------------------------------------------+\n");
-    printf("|            Name           |      Time      |  Priority  |          Reminder         |\n");
-    printf("+-------------------------------------------------------------------------------------+\n");
+    printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
+    printf("|No |              Name              |      Time      |  Priority  |             Reminder           |\n");
+    printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
 
     int i = q->front;
+    int eventNum = 1;
     while (1) {
         char timeStartStr[10];
         char timeEndStr[10];
         formatTime(q->events[i].timeStart, timeStartStr);
         formatTime(q->events[i].timeEnd, timeEndStr);
 
-        printf("| %-25s | %s -> %s | %-10d | %-25s |\n",
-               q->events[i].name, timeStartStr, timeEndStr, q->events[i].priority, q->events[i].reminder);
+        printf("|%-3d| %-30s | %s -> %s | %-10d | %-30s |\n",
+               eventNum, q->events[i].name, timeStartStr, timeEndStr, q->events[i].priority, q->events[i].reminder);
 
         if (i == q->rear) {
             break;
         }
         i = (i + 1) % MAX_EVENTS;
+        eventNum ++;
     }
 
-    printf("+-------------------------------------------------------------------------------------+\n");
+    printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
 }
 
 int main() {
@@ -144,7 +145,7 @@ int main() {
         printf("1. Add Events\n");
         printf("2. Display Events\n");
         printf("3. Handle Conflicts\n");
-        printf("4. Edit Event\n");
+        printf("4. Edit Events\n");
         printf("5. Exit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
