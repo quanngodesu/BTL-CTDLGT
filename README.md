@@ -1,5 +1,4 @@
 # BTL-CTDLGT
 Student Management using Queue and Balanced Binary Search Tree
 
-![image](https://github.com/user-attachments/assets/8cba467a-a5a4-42be-a23d-0096829a6d48)
-
+![Flowchart](https://github.com/user-attachments/assets/ca008237-2230-4bfc-8cc6-1af58dc3dcc3)
