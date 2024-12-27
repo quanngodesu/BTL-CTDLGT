@@ -148,6 +148,35 @@ void displayEvents(Queue *q) {
     printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
 }
 
+void deleteEvents(Queue *q){
+	if(isQueueEmpty(q)){
+		printf("No events to delete.\n");
+		return;
+	}
+	displayEvents(q);
+	printf("\nEnter event number to delete: ");
+	int eventNum;
+	scanf("%d", &eventNum);
+	if(eventNum < 1 || eventNum > totalEventNum){
+		printf("Invalid event number.\n");
+		return;
+	}
+	int indexToDelete = (q->front + eventNum - 1) % MAX_EVENTS;
+	printf("Deleting event number %d: %s\n", eventNum, q->events[indexToDelete].name);
+	int i = indexToDelete;
+	while(i != q->rear){
+		int nextIndex = (i+1) % MAX_EVENTS;
+		q->events[i] = q->events[nextIndex];
+		i = nextIndex;
+	}
+	if (q->front == q->rear) {
+        q->front = q->rear = -1; 
+    } else {
+        q->rear = (q->rear - 1 + MAX_EVENTS) % MAX_EVENTS;
+    }
+    printf("Event deleted successfully.\n");
+	
+}
 void editEvents(Queue *q){
 	if(isQueueEmpty(q)){
 		printf("No events to edit.\n");
@@ -166,13 +195,14 @@ void editEvents(Queue *q){
 	Event *event = &q->events[eventNum-1];
 	int choice;
 	do{
-		printf("\nEdit menu: \n");
-	    printf("1. Name\n");
-	    printf("2. Start Time\n");
-	    printf("3. End Time\n");
-	    printf("4. Priority\n");
-	    printf("5. Reminder\n");
-	    printf("6. Cancel\n");
+		printf("\nEdit Menu: \n");
+	    printf("1. Edit Name\n");
+	    printf("2. Edit Start Time\n");
+	    printf("3. Edit End Time\n");
+	    printf("4. Edit Priority\n");
+	    printf("5. Edit Reminder\n");
+	    printf("6. Delete\n");
+	    printf("7. Cancel\n");
 	    printf("Enter your choice: ");
 	    scanf("%d", &choice);
 	    getchar();
@@ -221,6 +251,9 @@ void editEvents(Queue *q){
                 break;
                 
             case 6:
+            	deleteEvents(q);
+            	break;
+            case 7:
             	printf("Edit cancelled.\n");
             	return;
             	
