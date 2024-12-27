@@ -167,71 +167,90 @@ void deleteEvents(Queue *q, int index) {
         printf("No events to delete.\n");
         return;
     }
-
+    if (index < 0 || index >= MAX_EVENTS) {
+        printf("Invalid index.\n");
+        return;
+    }
     int i = index;
     while (i != q->rear) {
         int nextIndex = (i + 1) % MAX_EVENTS;
         q->events[i] = q->events[nextIndex];
         i = nextIndex;
     }
-
     if (q->front == q->rear) {
-        q->front = q->rear = -1;
+        q->front = q->rear = -1; 
     } else {
-        q->front = (q->front + 1) % MAX_EVENTS;
+        q->rear = (q->rear - 1 + MAX_EVENTS) % MAX_EVENTS;  
     }
 
-    totalEventNum--;
+    totalEventNum--; 
     printf("Event deleted successfully.\n");
 }
-
 
 void handleConflict(Queue *q) {
     if (isQueueEmpty(q)) {
         printf("Queue is empty, no events to check for conflicts.\n");
         return;
     }
-    int i = q->front;
-    while (i != q->rear) {
-        int j = (i + 1) % MAX_EVENTS;
-        while (j != i) {
-            if ((q->events[i].timeStart < q->events[j].timeEnd) && (q->events[i].timeEnd > q->events[j].timeStart)) {
+
+    int i, j;
+    int eventsCount = totalEventNum;  
+
+    for (i = q->front; i != q->rear; i = (i + 1) % MAX_EVENTS) {
+        for (j = (i + 1) % MAX_EVENTS; j != q->rear; j = (j + 1) % MAX_EVENTS) {
+            if ((q->events[i].timeStart < q->events[j].timeEnd) && 
+                (q->events[i].timeEnd > q->events[j].timeStart)) {
                 printf("Conflict detected between event %s (%d-%d) and event %s (%d-%d).\n",
-                        q->events[i].name, q->events[i].timeStart, q->events[i].timeEnd,
-                        q->events[j].name, q->events[j].timeStart, q->events[j].timeEnd);
+                       q->events[i].name, q->events[i].timeStart, q->events[i].timeEnd,
+                       q->events[j].name, q->events[j].timeStart, q->events[j].timeEnd);
+
                 int choice;
                 do {
                     printf("Handle Conflicts Menu:\n");
                     printf("1. Keep event %s\n", q->events[i].name);
                     printf("2. Keep event %s\n", q->events[j].name);
                     printf("3. Remove both events\n");
-                    printf("Enter your choice (1, 2, or 3): ");
+                    printf("4. Back to Main Menu\n");
+                    printf("Enter your choice: ");
                     scanf("%d", &choice);
 
-                    if (choice < 1 || choice > 3) {
+                    if (choice < 1 || choice > 4) {
                         printf("Invalid choice. Please select a valid option.\n");
                     }
-                } while (choice < 1 || choice > 3);
+                } while (choice < 1 || choice > 4);
 
-                if (choice == 1) {
-                    printf("Event %s will be kept.\n", q->events[i].name);
-                    deleteEvents(q, j);
-                } else if (choice == 2) {
-                    printf("Event %s will be kept.\n", q->events[j].name);
-                    deleteEvents(q, i);
-                } else if (choice == 3) {
-                    printf("Both events will be removed.\n");
-                    deleteEvents(q, i);
-                    deleteEvents(q, j);
-                    break;
+                switch (choice) {
+                    case 1:
+                        printf("Event %s will be kept.\n", q->events[i].name);
+                        deleteEvents(q, j);  
+                        break;
+                    case 2:
+                        printf("Event %s will be kept.\n", q->events[j].name);
+                        deleteEvents(q, i); 
+						i = q->front; 
+                        break;
+                    case 3:
+                        printf("Both events will be removed.\n");
+                        deleteEvents(q, i);  
+                        deleteEvents(q, j); 
+						i = q->front;  
+                        break;
+                    case 4:
+                        printf("Returning to main menu.\n");
+                        return;
+                    default:
+                        break;
                 }
+                i = q->front;  
+                break;
             }
             j = (j + 1) % MAX_EVENTS;
         }
-        i = (i + 1) % MAX_EVENTS;
+        if(j == q ->rear){
+        	i = (i + 1) % MAX_EVENTS;
+		}
     }
 }
-
 
 void editEvents(Queue *q){
 	if(isQueueEmpty(q)){
@@ -259,7 +278,7 @@ void editEvents(Queue *q){
 	    printf("4. Edit Priority\n");
 	    printf("5. Edit Reminder\n");
 	    printf("6. Delete\n");
-	    printf("7. Cancel\n");
+	    printf("7. Back to Main Menu\n");
 	    printf("Enter your choice: ");
 	    scanf("%d", &choice);
 	    getchar();
@@ -308,7 +327,7 @@ void editEvents(Queue *q){
                 break;
                 
             case 6:
-            	deleteEvents(q, eventNum);
+            	deleteEvents(q, eventNum - 1);
             	break;
             case 7:
             	printf("Edit cancelled.\n");
