@@ -74,20 +74,19 @@ int isInvalidTime(int time){
 	return (time < 0 || time > 2400);
 }
 
-int isConflict(Queue *q, Event newEvent) {
+int isConflict(Queue *q, Event newEvent, int skipIndex) {
     int i = q->front;
     while (1) {
-        if ((newEvent.timeStart < q->events[i].timeEnd) && (newEvent.timeEnd > q->events[i].timeStart)) {
-            return 1; // Conflict detected
+        if (i != skipIndex && 
+            (newEvent.timeStart < q->events[i].timeEnd) &&
+            (newEvent.timeEnd > q->events[i].timeStart)) {
+            return 1; 
         }
-        if (i == q->rear) {
-            break;
-        }
+        if (i == q->rear) break;
         i = (i + 1) % MAX_EVENTS;
     }
-    return 0; // No conflict
+    return 0; 
 }
-
 
 int totalEventNum;
 void displayEvents(Queue *q) {  
@@ -147,7 +146,6 @@ void deleteEvents(Queue *q, int index) {
     printf("Event deleted successfully.\n");
 }
 
-// Function to input and validate event time
 int inputTime(const char *prompt) {
     int time;
     do {
@@ -160,7 +158,6 @@ int inputTime(const char *prompt) {
     return time;
 }
 
-// Function to create a new event
 Event createEvent() {
     Event newEvent;
 
@@ -185,6 +182,72 @@ Event createEvent() {
     newEvent.reminder[strcspn(newEvent.reminder, "\n")] = 0;
 
     return newEvent;
+}
+void editEventName(Event *event) {
+    printf("Enter new event name: ");
+    fgets(event->name, MAX_NAME, stdin);
+    event->name[strcspn(event->name, "\n")] = 0;
+    printf("Successfully edited.\n");
+}
+
+void editStartTime(Queue *q, int eventIndex) {
+    int newStartTime;
+    do {
+        printf("Enter new start time: ");
+        scanf("%d", &newStartTime);
+        getchar();
+        if (isInvalidTime(newStartTime)) {
+            printf("Invalid time. Please try again.\n");
+        } else {
+            Event tempEvent = q->events[eventIndex];
+            tempEvent.timeStart = newStartTime;
+            if (isConflict(q, tempEvent, eventIndex)) {
+                printf("Conflict detected. Please re-enter a valid time.\n");
+            } else {
+                q->events[eventIndex].timeStart = newStartTime;
+                printf("Start time updated successfully.\n");
+                return;
+            }
+        }
+    } while (1);
+}
+
+
+void editEndTime(Queue *q, int eventIndex) {
+    int newEndTime;
+    do {
+        printf("Enter new end time: ");
+        scanf("%d", &newEndTime);
+        getchar();
+        if (isInvalidTime(newEndTime)) {
+            printf("Invalid time. Please try again.\n");
+        } else {
+            Event tempEvent = q->events[eventIndex];
+            tempEvent.timeEnd = newEndTime;
+            if (isConflict(q, tempEvent, eventIndex)) {
+                printf("Conflict detected. Please re-enter a valid time.\n");
+            } else {
+                q->events[eventIndex].timeEnd = newEndTime;
+                printf("End time updated successfully.\n");
+                return;
+            }
+        }
+    } while (1);
+}
+
+
+void editEventPriority(Event *event) {
+    printf("Enter new priority: ");
+    scanf("%d", &event->priority);
+    getchar();
+    printf("Successfully edited.\n");
+}
+
+void editEventReminder(Event *event) {
+    printf("Enter new reminder: ");
+    fgets(event->reminder, MAX_REMINDER, stdin);
+    event->reminder[strcspn(event->reminder, "\n")] = 0;
+    printf("Successfully edited.\n");
 }
 
 void editEvents(Queue *q) {
@@ -217,66 +280,33 @@ void editEvents(Queue *q) {
         printf("Enter your choice: ");
         scanf("%d", &choice);
         getchar();
+        system("cls");
 
         switch (choice) {
             case 1:
-                printf("Enter new event name: ");
-                fgets(event->name, MAX_NAME, stdin);
-                event->name[strcspn(event->name, "\n")] = 0;
-                printf("Successfully edited.\n");
+                editEventName(event);
                 break;
-
             case 2:
-                do {
-                    printf("Enter new start time: ");
-                    scanf("%d", &event->timeStart);
-                    getchar();
-                    if (isInvalidTime(event->timeStart)) {
-                        printf("Invalid time. Please try again.\n");
-                    } else if (isConflict(q, *event)) {
-                        printf("Conflict detected. Please re-enter a valid time.\n");
-                    }
-                } while (isInvalidTime(event->timeStart) || isConflict(q, *event));
-                printf("Successfully edited.\n");
+                editStartTime(q, eventNum - 1);  
                 break;
-
             case 3:
-                do {
-                    printf("Enter new end time: ");
-                    scanf("%d", &event->timeEnd);
-                    getchar();
-                    if (isInvalidTime(event->timeEnd) || event->timeStart > event->timeEnd) {
-                        printf("Invalid time. Please try again.\n");
-                    } else if (isConflict(q, *event)) {
-                        printf("Conflict detected. Please re-enter a valid time.\n");
-                    }
-                } while (isInvalidTime(event->timeEnd) || event->timeStart > event->timeEnd || isConflict(q, *event));
-                printf("Successfully edited.\n");
+                editEndTime(q, eventNum - 1);  
                 break;
-
             case 4:
-                printf("Enter new priority: ");
-                scanf("%d", &event->priority);
-                getchar();
-                printf("Successfully edited.\n");
+                editEventPriority(event);
                 break;
-
             case 5:
-                printf("Enter new reminder: ");
-                fgets(event->reminder, MAX_REMINDER, stdin);
-                event->reminder[strcspn(event->reminder, "\n")] = 0;
-                printf("Successfully edited.\n");
+                editEventReminder(event);
                 break;
-
             case 6:
                 printf("Edit cancelled.\n");
                 return;
-
             default:
                 printf("Invalid choice. Please try again.\n");
         }
     } while (choice != 6);
 }
+
 
 void sortEventsByPriority(Queue *q) {
     for (int i = 0; i < totalEventNum - 1; i++) {
@@ -295,18 +325,15 @@ void addEvents(Queue *q) {
         printf("Queue is full. Cannot add more events.\n");
         return;
     }
-
     Event newEvent = createEvent();
-
-    if (isConflict(q, newEvent)) {
+    while (isConflict(q, newEvent, totalEventNum)) {
         printf("Conflict detected. Please re-enter the event details.\n");
-        addEvents(q); // Recursive call to re-enter event details
-    } else {
-        enqueue(q, newEvent);
-        printf("Event added successfully.\n");
+        newEvent = createEvent();  
     }
-}
 
+    enqueue(q, newEvent);
+    printf("Event added successfully.\n");
+}
 
 int main() {
     Queue eventQueue;
@@ -315,7 +342,7 @@ int main() {
     int index;
 
     do {
-        printf("\nMenu:\n");
+        printf("\nMain Menu:\n");
         printf("1. Add Events\n");
         printf("2. Display Events\n");
         printf("3. Delete Events\n");
@@ -324,6 +351,7 @@ int main() {
         printf("Enter your choice: ");
         scanf("%d", &choice);
         getchar(); 
+        system("cls");
 
         switch(choice){
         	case 1:
@@ -335,9 +363,10 @@ int main() {
         		break;
         	
         	case 3:
+        		displayEvents(&eventQueue);
         		printf("Enter event number you would like to delete: ");
         		scanf("%d", &index);
-        		deleteEvents(&eventQueue, index);
+        		deleteEvents(&eventQueue, index-1);
         		break;
         	
         	case 4:
