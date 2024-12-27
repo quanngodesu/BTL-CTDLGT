@@ -78,17 +78,25 @@ int isInvalidTime(int time) {
 
 
 int isConflict(Queue *q, Event newEvent, int skipIndex) {
+    if (isQueueEmpty(q)) return -1;
+    
     int i = q->front;
-    while (1) {
-        if (i != skipIndex && 
-            (newEvent.timeStart < q->events[i].timeEnd) &&
-            (newEvent.timeEnd > q->events[i].timeStart)) {
-            return 1; 
+    do {
+        if (i == skipIndex) {
+            if (i == q->rear) break;
+            i = (i + 1) % MAX_EVENTS;
+            continue;
         }
+        
+        if ((newEvent.timeStart < q->events[i].timeEnd) &&
+            (newEvent.timeEnd > q->events[i].timeStart)) {
+            return i;
+        }
+        
         if (i == q->rear) break;
         i = (i + 1) % MAX_EVENTS;
-    }
-    return 0; 
+    } while (1);
+    return -1;
 }
 
 int totalEventNum;
@@ -204,7 +212,7 @@ void editStartTime(Queue *q, int eventIndex) {
         } else {
             Event tempEvent = q->events[eventIndex];
             tempEvent.timeStart = newStartTime;
-            if (isConflict(q, tempEvent, eventIndex)) {
+            if (isConflict(q, tempEvent, eventIndex) >=0 ) {
                 printf("Conflict detected. Please re-enter a valid time.\n");
             } else {
                 q->events[eventIndex].timeStart = newStartTime;
@@ -227,7 +235,7 @@ void editEndTime(Queue *q, int eventIndex) {
         } else {
             Event tempEvent = q->events[eventIndex];
             tempEvent.timeEnd = newEndTime;
-            if (isConflict(q, tempEvent, eventIndex)) {
+            if (isConflict(q, tempEvent, eventIndex) >=0 ) {
                 printf("Conflict detected. Please re-enter a valid time.\n");
             } else {
                 q->events[eventIndex].timeEnd = newEndTime;
@@ -325,17 +333,32 @@ void sortEventsByPriority(Queue *q) {
 
 void addEvents(Queue *q) {
     if (isQueueFull(q)) {
-        printf("Queue is full. Cannot add more events.\n");
+        printf("Queue is full.\n");
         return;
     }
+    
     Event newEvent = createEvent();
-    while (isConflict(q, newEvent, totalEventNum)) {
-        printf("Conflict detected. Please re-enter the event details.\n");
-        newEvent = createEvent();  
+    int conflictIndex;
+    
+    while ((conflictIndex = isConflict(q, newEvent, -1)) >= 0) {
+        if (q->events[conflictIndex].priority > newEvent.priority) {
+            printf("Conflict with Event %d. Replace it? (1-Yes/0-No): ", conflictIndex + 1);
+            int choice;
+            scanf("%d", &choice);
+            getchar();
+            
+            if (choice == 1) {
+                q->events[conflictIndex] = newEvent;
+                printf("Event replaced.\n");
+                return;
+            }
+        }
+        printf("Event conflicts with existing event. Please retry.\n");
+        newEvent = createEvent();
     }
-
+    
     enqueue(q, newEvent);
-    printf("Event added successfully.\n");
+    printf("Event added.\n");
 }
 
 int main() {
