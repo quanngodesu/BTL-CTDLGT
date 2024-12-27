@@ -73,6 +73,20 @@ void formatTime(int time, char *buffer) {
 int isInvalidTime(int time){
 	return (time < 0 || time > 2400);
 }
+
+int isConflict(Queue *q, Event newEvent) {
+	int i = q->front;
+	while(1){
+		if((newEvent.timeStart < q->events[i].timeEnd) && (newEvent.timeEnd > q->events[i].timeStart)){
+			return 1;
+		}
+		if(i == q->rear){
+			break;
+		}
+		i = (i+1) % MAX_EVENTS;
+	}
+	return 0;
+}
 //Add Events
 void addEvents(Queue *q){
 
@@ -148,41 +162,84 @@ void displayEvents(Queue *q) {
     printf("+---+--------------------------------+----------------+------------+--------------------------------+\n");
 }
 
-void deleteEvents(Queue *q){
-	if(isQueueEmpty(q)){
-		printf("No events to delete.\n");
-		return;
-	}
-	displayEvents(q);
-	printf("\nEnter event number to delete: ");
-	int eventNum;
-	scanf("%d", &eventNum);
-	if(eventNum < 1 || eventNum > totalEventNum){
-		printf("Invalid event number.\n");
-		return;
-	}
-	int indexToDelete = (q->front + eventNum - 1) % MAX_EVENTS;
-	printf("Deleting event number %d: %s\n", eventNum, q->events[indexToDelete].name);
-	int i = indexToDelete;
-	while(i != q->rear){
-		int nextIndex = (i+1) % MAX_EVENTS;
-		q->events[i] = q->events[nextIndex];
-		i = nextIndex;
-	}
-	if (q->front == q->rear) {
-        q->front = q->rear = -1; 
-    } else {
-        q->rear = (q->rear - 1 + MAX_EVENTS) % MAX_EVENTS;
+void deleteEvents(Queue *q, int index) {
+    if (isQueueEmpty(q)) {
+        printf("No events to delete.\n");
+        return;
     }
+
+    int i = index;
+    while (i != q->rear) {
+        int nextIndex = (i + 1) % MAX_EVENTS;
+        q->events[i] = q->events[nextIndex];
+        i = nextIndex;
+    }
+
+    if (q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front = (q->front + 1) % MAX_EVENTS;
+    }
+
+    totalEventNum--;
     printf("Event deleted successfully.\n");
-	
 }
+
+
+void handleConflict(Queue *q) {
+    if (isQueueEmpty(q)) {
+        printf("Queue is empty, no events to check for conflicts.\n");
+        return;
+    }
+    int i = q->front;
+    while (i != q->rear) {
+        int j = (i + 1) % MAX_EVENTS;
+        while (j != i) {
+            if ((q->events[i].timeStart < q->events[j].timeEnd) && (q->events[i].timeEnd > q->events[j].timeStart)) {
+                printf("Conflict detected between event %s (%d-%d) and event %s (%d-%d).\n",
+                        q->events[i].name, q->events[i].timeStart, q->events[i].timeEnd,
+                        q->events[j].name, q->events[j].timeStart, q->events[j].timeEnd);
+                int choice;
+                do {
+                    printf("Handle Conflicts Menu:\n");
+                    printf("1. Keep event %s\n", q->events[i].name);
+                    printf("2. Keep event %s\n", q->events[j].name);
+                    printf("3. Remove both events\n");
+                    printf("Enter your choice (1, 2, or 3): ");
+                    scanf("%d", &choice);
+
+                    if (choice < 1 || choice > 3) {
+                        printf("Invalid choice. Please select a valid option.\n");
+                    }
+                } while (choice < 1 || choice > 3);
+
+                if (choice == 1) {
+                    printf("Event %s will be kept.\n", q->events[i].name);
+                    deleteEvents(q, j);
+                } else if (choice == 2) {
+                    printf("Event %s will be kept.\n", q->events[j].name);
+                    deleteEvents(q, i);
+                } else if (choice == 3) {
+                    printf("Both events will be removed.\n");
+                    deleteEvents(q, i);
+                    deleteEvents(q, j);
+                    break;
+                }
+            }
+            j = (j + 1) % MAX_EVENTS;
+        }
+        i = (i + 1) % MAX_EVENTS;
+    }
+}
+
+
 void editEvents(Queue *q){
 	if(isQueueEmpty(q)){
 		printf("No events to edit.\n");
 		return;
 	}
 	int eventNum;
+	displayEvents(q);
 	do{
 		printf("Enter event number to edit: ");
 	    scanf("%d", &eventNum);
@@ -251,7 +308,7 @@ void editEvents(Queue *q){
                 break;
                 
             case 6:
-            	deleteEvents(q);
+            	deleteEvents(q, eventNum);
             	break;
             case 7:
             	printf("Edit cancelled.\n");
@@ -289,6 +346,7 @@ int main() {
         		break;
         	
         	case 3:
+        		handleConflict(&eventQueue);
         		break;
         	
         	case 4:
