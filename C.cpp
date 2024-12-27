@@ -70,9 +70,12 @@ void formatTime(int time, char *buffer) {
     int minute = time % 100;
     sprintf(buffer, "%02d:%02d", hour, minute);
 }
-int isInvalidTime(int time){
-	return (time < 0 || time > 2400);
+int isInvalidTime(int time) {
+    int hour = time / 100;
+    int minute = time % 100;
+    return (time < 0 || time > 2359 || hour < 0 || hour > 23 || minute < 0 || minute > 59);
 }
+
 
 int isConflict(Queue *q, Event newEvent, int skipIndex) {
     int i = q->front;
