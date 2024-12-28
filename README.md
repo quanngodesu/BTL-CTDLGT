@@ -3,4 +3,5 @@ Student Management using Queue and Balanced Binary Search Tree
 
 
 
-![Flowchart](https://github.com/user-attachments/assets/e1f4f848-53e5-46d9-bef4-0b892f8e5d69)
+![image](https://github.com/user-attachments/assets/6b877544-7dee-442e-a218-54a98bd0b1e7)
+
