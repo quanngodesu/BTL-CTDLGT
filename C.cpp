@@ -6,6 +6,7 @@
 #define MAX_NAME 50
 #define MAX_REMINDER 50
 
+int totalEventNum;
 typedef struct {
     char name[MAX_NAME];
     int timeStart;
@@ -44,6 +45,7 @@ void enqueue(Queue *q, Event event) {
     }
     q->rear = (q->rear + 1) % MAX_EVENTS;
     q->events[q->rear] = event;
+    totalEventNum ++;
 }
 
 
@@ -61,6 +63,7 @@ Event dequeue(Queue *q) {
     } else {
         q->front = (q->front + 1) % MAX_EVENTS;
     }
+    totalEventNum --;
 
     return event;
 }
@@ -74,6 +77,24 @@ int isInvalidTime(int time) {
     int hour = time / 100;
     int minute = time % 100;
     return (time < 0 || time > 2359 || hour < 0 || hour > 23 || minute < 0 || minute > 59);
+}
+
+
+void sortEventsByTime(Queue *q) {
+    if (isQueueEmpty(q)) {
+        printf("No events to sort.\n");
+        return;
+    }
+
+    for (int i = 0; i < totalEventNum - 1; i++) {
+        for (int j = i + 1; j < totalEventNum; j++) {
+            if (q->events[i].timeStart > q->events[j].timeStart) {
+                Event temp = q->events[i];
+                q->events[i] = q->events[j];
+                q->events[j] = temp;
+            }
+        }
+    }
 }
 
 
@@ -99,7 +120,6 @@ int isConflict(Queue *q, Event newEvent, int skipIndex) {
     return -1;
 }
 
-int totalEventNum;
 void displayEvents(Queue *q) {  
     if (isQueueEmpty(q)) {
         printf("No events to display.\n");
@@ -155,6 +175,7 @@ void deleteEvents(Queue *q, int index) {
 
     totalEventNum--; 
     printf("Event deleted successfully.\n");
+    sortEventsByTime(q);
 }
 
 int inputTime(const char *prompt) {
@@ -194,6 +215,7 @@ Event createEvent() {
 
     return newEvent;
 }
+
 void editEventName(Event *event) {
     printf("Enter new event name: ");
     fgets(event->name, MAX_NAME, stdin);
@@ -261,6 +283,7 @@ void editEventReminder(Event *event) {
     printf("Successfully edited.\n");
 }
 
+
 void editEvents(Queue *q) {
     if (isQueueEmpty(q)) {
         printf("No events to edit.\n");
@@ -281,13 +304,16 @@ void editEvents(Queue *q) {
     Event *event = &q->events[eventNum - 1];
     int choice;
     do {
-        printf("\nEdit Menu: \n");
-        printf("1. Edit Name\n");
-        printf("2. Edit Start Time\n");
-        printf("3. Edit End Time\n");
-        printf("4. Edit Priority\n");
-        printf("5. Edit Reminder\n");
-        printf("6. Back to Main Menu\n");
+    	printf("\n");
+    	printf("================================\n");
+        printf("|          Edit Menu:          |\n");
+        printf("|1. Edit Name                  |\n");
+        printf("|2. Edit Start Time            |\n");
+        printf("|3. Edit End Time              |\n");
+        printf("|4. Edit Priority              |\n");
+        printf("|5. Edit Reminder              |\n");
+        printf("|6. Back to Main Menu          |\n");
+        printf("================================\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
         getchar();
@@ -316,19 +342,7 @@ void editEvents(Queue *q) {
                 printf("Invalid choice. Please try again.\n");
         }
     } while (choice != 6);
-}
-
-
-void sortEventsByPriority(Queue *q) {
-    for (int i = 0; i < totalEventNum - 1; i++) {
-        for (int j = i + 1; j < totalEventNum; j++) {
-            if (q->events[i].priority > q->events[j].priority) {
-                Event temp = q->events[i];
-                q->events[i] = q->events[j];
-                q->events[j] = temp;
-            }
-        }
-    }
+    sortEventsByTime(q);
 }
 
 void addEvents(Queue *q) {
@@ -359,6 +373,7 @@ void addEvents(Queue *q) {
     
     enqueue(q, newEvent);
     printf("Event added.\n");
+    sortEventsByTime(q);
 }
 
 int main() {
@@ -366,14 +381,26 @@ int main() {
     initializeQueue(&eventQueue);
     int choice;
     int index;
+    printf("================================\n");
+    printf("|                              |\n");
+    printf("|        Time Management       |\n");
+    printf("|            System            |\n");
+    printf("|                              |\n");
+    printf("================================\n");
+    printf("Press Enter to continue: ");
+    getchar();
+    system("cls");
 
     do {
-        printf("\nMain Menu:\n");
-        printf("1. Add Events\n");
-        printf("2. Display Events\n");
-        printf("3. Delete Events\n");
-        printf("4. Edit Events\n");
-        printf("5. Exit\n");
+    	printf("\n");
+    	printf("================================\n");
+        printf("|          Main Menu:          |\n");
+        printf("|1. Add Events                 |\n");
+        printf("|2. Display Events             |\n");
+        printf("|3. Delete Events              |\n");
+        printf("|4. Edit Events                |\n");
+        printf("|5. Exit                       |\n");
+        printf("================================\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
         getchar(); 
@@ -385,6 +412,7 @@ int main() {
         		break;
         	
         	case 2:
+        		sortEventsByTime(&eventQueue);
         		displayEvents(&eventQueue);
         		break;
         	
@@ -405,7 +433,6 @@ int main() {
         	
         	default:
         		printf("Invalid choice. Please try again.\n");
-        
 		}
     } while (choice != 5);
 
